@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import MapView from "react-native-maps";
 import {
   StyleSheet,
@@ -11,20 +11,29 @@ import { useTheme, Searchbar } from "react-native-paper";
 import GPSButton from "./GPSButton";
 
 export default function Map() {
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [region, setRegion] = useState({
+    latitude: 42.685096,
+    longitude: 23.318981,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const [camera, setCamera] = useState();
   const onChangeSearch = (query) => setSearchQuery(query);
   const theme = useTheme();
+  const map = useRef(null)
+
+  function cameraChange(camera) {
+    map.current.animateCamera(camera)
+  }
 
   return (
     <View style={styles.container}>
       <MapView
+        ref={(current) => map.current = current}
         style={styles.map}
-        initialRegion={{
-          latitude: 42.685096,
-          longitude: 23.318981,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
+        region={region}
+        camera={camera}
       />
       <View style={styles.inputWrapper}>
         <Searchbar
@@ -35,15 +44,8 @@ export default function Map() {
           onChangeText={onChangeSearch}
           value={searchQuery}
         />
-        <GPSButton />
+        <GPSButton cameraChange={cameraChange} />
       </View>
-      {/* <ImageBackground
-        source={{
-          uri: "https://images.unsplash.com/photo-1688999558024-0bbeac1c0102?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80",
-        }}
-        resizeMode="cover"
-        style={styles.image}
-      ></ImageBackground> */}
       <StatusBar backgroundColor={undefined} barStyle={"default"} />
     </View>
   );
@@ -67,7 +69,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   input: {
-    width: "65%",
+    width: "55%",
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     backgroundColor: "white",
